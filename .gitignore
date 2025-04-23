@@ -31,7 +31,7 @@ env/
 .venv/
 
 Hamburguer + Suco
-vouchers
+
 # Configurações locais ocultas
 *.local
 
