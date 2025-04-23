@@ -1,0 +1,62 @@
+# Referente ao Python
+*.py[cod]
+__pycache__/
+*.so
+.env
+*.env
+
+# Logs
+*.log
+*.log.*
+
+# Diretórios de backup/persistência
+db.sqlite3
+*.sqlite3
+
+# Arquivos de mídia/carregados pelo usuário
+media/
+uploads/
+
+# Migrations geradas automaticamente (opcional, geralmente incluímos no repositório)
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# Arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Ambiente virtual
+venv/
+env/
+.venv/
+
+Hamburguer + Suco
+vouchers
+# Configurações locais ocultas
+*.local
+
+# Para IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+.PyCharm*
+
+# Docker
+*.stackdump
+docker-compose.override.yml
+
+# Test coverage
+htmlcov/
+.tox/
+.nox/
+
+# Git arquivos próprio Git
+!.gitignore
+
+# Ignorar arquivos de compilação
+node_modules/
+dist/
+build/
+*.bak
+coverage/
