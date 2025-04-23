@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Caixa{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  {% for comanda in comandas %}
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Nome: {{ comanda.nome }}</h5>
+        <h5 class="card-title">Comanda {{ comanda.id }}</h5>
+        <h5 class="card-title">Pedido: {{ comanda.pedido }}</h5>
+
+
+
+        <ul class="list-unstyled">
+          {% for item in comanda.itens.all %}
+            <li>1x {{ item.nome }}</li>
+          {% endfor %}
+        </ul>
+
+        <p class="mb-2"><strong>Total:</strong> R$ {{ comanda.total|floatformat:2 }}</p>
+
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'caixa:marcar_como_pago' comanda.id %}">
+            {% csrf_token %}
+              <button type="submit" class="btn btn-success btn-sm" style="width: 60px; height: 49px;">✔️</button>
+          </form>
+            <a href="{% url 'comandas:gerar_voucher' comanda.pk %}" target="_blank" class="btn btn-warning btn-sm">
+                <img src="{% static 'img/voucher.png' %}" alt="Ícone" style="width: 40px; height: 40px;">
+            </a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+                  <form action="{% url 'comandas:reiniciar_comandas' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">Reiniciar Comandas</button>
+            </form>
+</div>
+{% endblock %}

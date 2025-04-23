@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Nova Comanda{% endblock %}
+
+{% block content %}
+<div class="mt-4">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="id_nome" class="form-label">Nome</label>
+            <input type="text" name="nome" class="form-control" id="id_nome" placeholder="Digite seu nome" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_pedido" class="form-label">Pedido</label>
+            <select name="pedido" id="id_pedido" class="form-select" required>
+                <option value="" disabled selected>Selecione o pedido</option>
+                <option value="Hamburguer + Suco">Hamburguer + Suco R$ - 20,00</option>
+                <option value="Hamburguer + Refri">Hamburguer + Refri - R$ 21,00</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_pagamento" class="form-label">Pagamento</label>
+            <select name="pagamento" id="id_pagamento" class="form-select" required>
+                <option value="" disabled selected>Selecione o pagamento</option>
+                <option value="pix">Pix</option>
+                <option value="cartao">Cartão</option>
+            </select>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-danger">Finalizar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

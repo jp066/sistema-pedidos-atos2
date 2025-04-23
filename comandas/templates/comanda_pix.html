@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pagamento - Pix{% endblock %}
+
+{% block content %}
+<div class="text-center mt-4">
+    <h3>Escaneie o QR Code abaixo para pagar</h3>
+    <img src="{% static 'img/qr_code.jpeg' %}" alt="QR Code Pix" class="img-fluid my-4" style="max-width: 300px;">
+    <p>Após o pagamento, aguarde a confirmação.</p>
+</div>
+{% endblock %}
