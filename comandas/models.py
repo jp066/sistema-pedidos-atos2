@@ -2,14 +2,16 @@ from django.db import models
 
 from django.db import models
 
+
 class Comanda(models.Model):
     nome = models.CharField(max_length=100)
+    servo = models.CharField(max_length=100, blank=True)
     forma_pagamento = models.CharField(max_length=20, choices=[
         ('dinheiro', 'Dinheiro'),
         ('pix', 'Pix'),
         ('cartao', 'Cartão'),
     ])
-    pedido = models.CharField(max_length=100)  # ⬅️ ADICIONE ESTA LINHA
+    pedido = models.CharField(max_length=100)
     pago = models.BooleanField(default=False)
 
     def total(self):

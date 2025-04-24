@@ -3,9 +3,27 @@
 {% block title %}Pagamento - Pix{% endblock %}
 
 {% block content %}
-<div class="text-center mt-4">
-    <h3>Escaneie o QR Code abaixo para pagar</h3>
-    <img src="{% static 'img/qr_code.jpeg' %}" alt="QR Code Pix" class="img-fluid my-4" style="max-width: 300px;">
-    <p>Após o pagamento, aguarde a confirmação.</p>
+<div class="d-flex flex-column justify-content-center align-items-center min-vh-100">
+    <h3 class="text-center mb-3">Escaneie o QR Code abaixo para pagar</h3>
+
+    <!-- QR Code -->
+    <img src="{% static 'img/qr_code.jpeg' %}"
+         alt="QR Code Pix"
+         class="img-fluid mb-3"
+         style="max-width: 300px;">
+
+    <!-- Botão / ícone do voucher em bloco próprio -->
+    <a href="{% url 'comandas:gerar_voucher' comanda.pk %}"
+       target="_blank"
+       class="btn btn-warning d-flex flex-column align-items-center gap-2 mb-3">
+
+        <img src="{% static 'img/voucher.png' %}"
+             alt="Voucher"
+             style="width: 40px; height: 40px;">
+
+        <span class="small fw-semibold text-dark">Gerar&nbsp;voucher</span>
+    </a>
+
+    <p class="text-center mt-2">Após o pagamento, aguarde a confirmação.</p>
 </div>
 {% endblock %}

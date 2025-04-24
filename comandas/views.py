@@ -7,6 +7,8 @@ from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from django.http import FileResponse
+from reportlab.lib import colors
+from django.contrib import messages
 
 
 COMBOS = {
@@ -19,23 +21,38 @@ COMBOS = {
         {'nome': 'Refrigerante', 'preco': 6.00},
     ],
 }
+
+SERVOS = ['Fulano', 'Beltrano', 'Ciclano', 'Cateno']
 def comanda_list(request):
     return render(request, 'comanda_list.html')
 
 
 def comanda_create(request):
     if request.method == 'POST':
-        nome = request.POST.get('nome')
+        nome      = request.POST.get('nome')
+        servo     = request.POST.get('servo')
         pagamento = request.POST.get('pagamento')
-        pedido = request.POST.get('pedido')
+        pedido    = request.POST.get('pedido')
 
+        # ── Limite: 3 comandas por servo ────────────────────────────
+        if Comanda.objects.filter(servo=servo).count() >= 3:
+            return render(
+                request,
+                'comanda_form.html',
+                {
+                    'erro_servo': f'{servo} já vendeu todas as comandas.'
+                }
+            )
+
+        # Cria a comanda
         comanda = Comanda.objects.create(
             nome=nome,
+            servo=servo,
             forma_pagamento=pagamento,
             pedido=pedido
         )
 
-        # Cria os itens com base no combo escolhido
+        # Cria itens do combo selecionado
         for item in COMBOS.get(pedido, []):
             Item.objects.create(
                 comanda=comanda,
@@ -43,6 +60,7 @@ def comanda_create(request):
                 preco=item['preco']
             )
 
+        # Redireciona conforme pagamento
         if pagamento == 'pix':
             return redirect('comandas:comanda_pix', pk=comanda.pk)
         elif pagamento == 'cartao':
@@ -50,15 +68,28 @@ def comanda_create(request):
         else:
             return redirect('comandas:comanda_list')
 
-    return render(request, 'comanda_form.html')
+    # GET → exibe formulário
+    return render(request, 'comanda_form.html', {
+        'servos': SERVOS})
 
 
 def comanda_pix(request, pk):
     comanda = get_object_or_404(Comanda, pk=pk)
+
+    if comanda.pago:
+        messages.info(request, 'Obrigado por sua compra!')
+        return redirect('comandas:comanda_list')
+
     return render(request, 'comanda_pix.html', {'comanda': comanda})
+
 
 def comanda_cartao(request, pk):
     comanda = get_object_or_404(Comanda, pk=pk)
+
+    if comanda.pago:
+        messages.info(request, 'Obrigado por sua compra!')
+        return redirect('comandas:comanda_list')
+
     return render(request, 'comanda_cartao.html', {'comanda': comanda})
 
 
@@ -92,24 +123,30 @@ def gerar_voucher_comanda(comanda_id, pasta='vouchers'):
     os.makedirs(pasta, exist_ok=True)
 
     comanda = Comanda.objects.prefetch_related('itens').get(pk=comanda_id)
-    nome_cliente = comanda.nome
-    pedido_descricao = comanda.pedido
-    numero_comanda = comanda.pk
+    nome_cliente      = comanda.nome
+    servo_cliente = comanda.servo
+    pedido_descricao  = comanda.pedido
+    numero_comanda    = comanda.pk
+    status_pago       = "PAGO" if comanda.pago else "NÃO PAGO"
 
     nome_arquivo = os.path.join(pasta, f'voucher_{numero_comanda}.pdf')
 
     largura, altura = 21 * cm, 9 * cm
     c = canvas.Canvas(nome_arquivo, pagesize=(largura, altura))
 
-    # Logo centralizado
+    # Logo
     logo_path = os.path.join(settings.BASE_DIR, 'static/img/logo_atos2.png')
     if os.path.exists(logo_path):
         logo = ImageReader(logo_path)
-        c.drawImage(logo, (largura - 3.5 * cm) / 2, altura - 4.8 * cm, width=3.5 * cm, height=3.5 * cm, mask='auto')
+        c.drawImage(logo, (largura - 3.5 * cm) / 2,
+                    altura - 4.2 * cm, width=3.5 * cm, height=3.5 * cm, mask='auto')
 
-    # Nome do cliente (substitui "Atos 2")
+    # Nome do cliente
     c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(largura / 2, altura - 5.4 * cm, nome_cliente)
+    c.drawCentredString(largura / 2, altura - 4.8 * cm, nome_cliente)
+
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(largura / 2, altura - 5.5 * cm, f"Servo: {servo_cliente}")
 
     # Descrição do pedido
     c.setFont("Helvetica", 14)
@@ -118,6 +155,15 @@ def gerar_voucher_comanda(comanda_id, pasta='vouchers'):
     # Número da comanda
     c.setFont("Helvetica-Bold", 22)
     c.drawCentredString(largura / 2, altura - 7.5 * cm, str(numero_comanda))
+
+    # --- Status de pagamento ---
+    c.setFont("Helvetica-Bold", 14)
+    if comanda.pago:
+        c.setFillColor(colors.green)
+    else:
+        c.setFillColor(colors.red)
+    c.drawCentredString(largura / 2, altura - 8.4 * cm, status_pago)
+    c.setFillColor(colors.black)        # volta para preto
 
     c.showPage()
     c.save()
