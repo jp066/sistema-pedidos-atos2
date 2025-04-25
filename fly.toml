@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for sistema-pedidos-atos2 on 2025-04-24T21:37:34-03:00
+# fly.toml app configuration file generated for sistema-pedidos-atos2 on 2025-04-24T22:53:29-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -15,16 +15,20 @@ console_command = '/code/manage.py shell'
 [http_service]
   internal_port = 8000
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '2gb'
   cpu_kind = 'shared'
   cpus = 1
 
 [[statics]]
   guest_path = '/code/static'
   url_prefix = '/static/'
+
+[[mounts]]
+source="atos2db"
+destination="/code/volumes/atos2db"

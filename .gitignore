@@ -10,7 +10,7 @@ __pycache__/
 *.log.*
 
 # Diretórios de backup/persistência
-db.sqlite3
+volumes/atos2db/db.sqlite3
 *.sqlite3
 
 # Arquivos de mídia/carregados pelo usuário

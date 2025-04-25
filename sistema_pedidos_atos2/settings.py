@@ -22,12 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-p6my=xa1=6&392ivj=d5+6_ba!m)31n(28j2*&@v!64jjj&86e')
-DEBUG = os.environ.get('DEBUG') == 'True'
 
+CSRF_COOKIE_DOMAIN = ".fly.dev"  # Ajuste isso para seu domínio se necessário
+CSRF_TRUSTED_ORIGINS = [
+    'https://sistema-pedidos-atos2.fly.dev',
+]
+CSRF_COOKIE_SECURE = True
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['sistema-pedidos-atos2.fly.dev', 'localhost', '127.0.0.1']
 
 LOGIN_URL = '/login/'          # para onde o @login_required redireciona
 LOGIN_REDIRECT_URL = '/caixa/' # para onde ir depois de logar
@@ -80,10 +84,12 @@ WSGI_APPLICATION = 'sistema_pedidos_atos2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'volumes/atos2db/sqlite3.db'),  # Usando o volume
     }
 }
 
