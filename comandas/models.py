@@ -6,6 +6,7 @@ from django.db import models
 class Comanda(models.Model):
     nome = models.CharField(max_length=100)
     servo = models.CharField(max_length=100, blank=True)
+    sem_servo = models.BooleanField(default=False)  # <-- Adicionado
     forma_pagamento = models.CharField(max_length=20, choices=[
         ('dinheiro', 'Dinheiro'),
         ('pix', 'Pix'),

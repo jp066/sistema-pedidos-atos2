@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Nova Comanda{% endblock %}
+{% block title %}ATOS Burguer{% endblock %}
 
 {% block content %}
 <div class="mt-4">
@@ -8,6 +8,14 @@
     {% if erro_servo %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ erro_servo }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+
+    {# ── Alerta de limite de estoque de comandas ── #}
+    {% if erro_estoque %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ erro_estoque }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endif %}
@@ -23,12 +31,23 @@
 
         <div class="mb-3">
             <label for="id_servo" class="form-label">Servo</label>
-<select name="servo" id="id_servo" class="form-select" required>
-    <option value="" disabled selected>Comprou de qual servo?</option>
-    {% for s in servos %}
-        <option value="{{ s }}" {% if form_data.servo == s %}selected{% endif %}>{{ s }}</option>
-    {% endfor %}
-</select>
+            {% if not sem_servo %}
+                <label for="servo">Escolha um Servo:</label>
+                <select name="servo" id="servo" class="form-control">
+                    <option value="">Selecione um servo</option>
+                    {% for servo in servos %}
+                        <option value="{{ servo }}">{{ servo }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+        </div>
+
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="sem_servo" id="id_sem_servo"
+                   {% if form_data.sem_servo %}checked{% endif %}>
+            <label class="form-check-label" for="id_sem_servo">
+                Comprar sem servo
+            </label>
         </div>
 
         <div class="mb-3">

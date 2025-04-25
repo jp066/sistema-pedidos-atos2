@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from comandas.models import Comanda
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def dashboard(request):
     comandas = Comanda.objects.filter(pago=False)
     total = comandas.count()

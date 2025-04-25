@@ -22,7 +22,22 @@ COMBOS = {
     ],
 }
 
-SERVOS = ['Fulano', 'Beltrano', 'Ciclano', 'Cateno']
+SERVOS = [
+    "João Pedro",
+    "Lucas",
+    "Antonio Carlos",
+    "David",
+    "Eva",
+    "ingrid",
+    "João Lucas",
+    "Lauro",
+    "Letícia Antunes",
+    "Tamyres",
+    "Mariana",
+    "João Vitor Sabino",
+    "Vitória",
+    "Márcio Santiago"
+]
 def comanda_list(request):
     return render(request, 'comanda_list.html')
 
@@ -31,11 +46,24 @@ def comanda_create(request):
     if request.method == 'POST':
         nome      = request.POST.get('nome')
         servo     = request.POST.get('servo')
+        sem_servo = request.POST.get('sem_servo') == 'on'
         pagamento = request.POST.get('pagamento')
         pedido    = request.POST.get('pedido')
 
-        # ── Limite: 3 comandas por servo ────────────────────────────
-        if Comanda.objects.filter(servo=servo).count() >= 3:
+        # Limite de 2 comandas no total
+        if Comanda.objects.count() >= 200:
+            return render(
+                request,
+                'comanda_form.html',
+                {
+                    'erro_estoque': 'O estoque de comandas está esgotado. Não é possível criar mais comandas.'
+                }
+            )
+
+        if sem_servo:
+            servo = ''
+
+        if not sem_servo and Comanda.objects.filter(servo=servo).count() >= 3:
             return render(
                 request,
                 'comanda_form.html',
@@ -48,6 +76,7 @@ def comanda_create(request):
         comanda = Comanda.objects.create(
             nome=nome,
             servo=servo,
+            sem_servo=sem_servo,
             forma_pagamento=pagamento,
             pedido=pedido
         )
@@ -71,6 +100,8 @@ def comanda_create(request):
     # GET → exibe formulário
     return render(request, 'comanda_form.html', {
         'servos': SERVOS})
+
+
 
 
 def comanda_pix(request, pk):
@@ -123,11 +154,11 @@ def gerar_voucher_comanda(comanda_id, pasta='vouchers'):
     os.makedirs(pasta, exist_ok=True)
 
     comanda = Comanda.objects.prefetch_related('itens').get(pk=comanda_id)
-    nome_cliente      = comanda.nome
-    servo_cliente = comanda.servo
-    pedido_descricao  = comanda.pedido
-    numero_comanda    = comanda.pk
-    status_pago       = "PAGO" if comanda.pago else "NÃO PAGO"
+    nome_cliente   = comanda.nome
+    servo_cliente  = comanda.servo if not comanda.sem_servo else 'Comprada no local'  # Verifica se é sem servo
+    pedido_descricao = comanda.pedido
+    numero_comanda = comanda.pk
+    status_pago    = "PAGO" if comanda.pago else "NÃO PAGO"
 
     nome_arquivo = os.path.join(pasta, f'voucher_{numero_comanda}.pdf')
 
@@ -145,10 +176,11 @@ def gerar_voucher_comanda(comanda_id, pasta='vouchers'):
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(largura / 2, altura - 4.8 * cm, nome_cliente)
 
+    # Nome do servo (ou "Comprada no local" se for sem_servo)
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(largura / 2, altura - 5.5 * cm, f"Servo: {servo_cliente}")
 
-    # Descrição do pedido
+    # Pedido
     c.setFont("Helvetica", 14)
     c.drawCentredString(largura / 2, altura - 6.2 * cm, pedido_descricao)
 
@@ -156,14 +188,19 @@ def gerar_voucher_comanda(comanda_id, pasta='vouchers'):
     c.setFont("Helvetica-Bold", 22)
     c.drawCentredString(largura / 2, altura - 7.5 * cm, str(numero_comanda))
 
-    # --- Status de pagamento ---
+    # Status
     c.setFont("Helvetica-Bold", 14)
-    if comanda.pago:
-        c.setFillColor(colors.green)
-    else:
-        c.setFillColor(colors.red)
+    c.setFillColor(colors.green if comanda.pago else colors.red)
     c.drawCentredString(largura / 2, altura - 8.4 * cm, status_pago)
-    c.setFillColor(colors.black)        # volta para preto
+    c.setFillColor(colors.black)
+
+    # --- QR Code Pix ---
+    qr_path = os.path.join(settings.BASE_DIR, 'static/img/qr_code.jpeg')
+    if os.path.exists(qr_path):
+        qr = ImageReader(qr_path)
+        qr_width, qr_height = 2.5 * cm, 2.5 * cm
+        c.drawImage(qr, largura - qr_width - 1 * cm, 0.5 * cm,
+                    width=qr_width, height=qr_height, mask='auto')
 
     c.showPage()
     c.save()
