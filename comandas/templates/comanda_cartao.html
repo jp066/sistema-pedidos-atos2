@@ -4,9 +4,17 @@
 
 {% block content %}
 <!-- container que ocupa 100 % da viewport e centraliza o conteúdo -->
+    <br>
+
+{% if comanda.servo and comanda_count >= 3 %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ comanda.servo }} já vendeu {{ comanda_count }} comandas! Parabéns pelo esforço! 🎉
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endif %}
 <div class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="text-center">
-        <h3 class="mb-2">Pague quando receber</h3>
+        <h3 class="mb-1">Pague quando receber</h3>
         <p class="mb-4">
             Você escolheu pagar com cartão. Um servo levará a maquininha até você.
         </p>

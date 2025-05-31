@@ -6,50 +6,180 @@
 <div class="container mt-4">
 
   <!-- Botão de Logout -->
-  {% if user.is_authenticated %}
-    <div class="text-end mb-3">
-      <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button class="btn btn-outline-danger">Logout</button>
-      </form>
+  <div class="d-flex justify-content-end mb-4">
+    <form action="{% url 'caixa:sair_caixa' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger">
+        🔒 Sair
+      </button>
+    </form>
+  </div>
+
+  <!-- Barra de Pesquisa -->
+  <form class="input-group mb-4" method="get" action="{% url 'caixa:dashboard' %}">
+    <input type="text" class="form-control" name="nome" placeholder="Pesquisar por nome" value="{{ nome_pesquisa }}">
+    <button type="submit" class="btn btn-primary">
+      🔍 Pesquisar
+    </button>
+  </form>
+
+  <!-- Abas -->
+<ul class="nav nav-tabs" id="caixaTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="pendentes-tab" data-bs-toggle="tab" data-bs-target="#pendentes" type="button" role="tab">
+      Pendentes
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pagos-tab" data-bs-toggle="tab" data-bs-target="#pagos" type="button" role="tab">
+      Pagos
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="finalizadas-tab" data-bs-toggle="tab" data-bs-target="#finalizadas" type="button" role="tab">
+      Finalizadas
+    </button>
+  </li>
+</ul>
+
+  <div class="tab-content mt-3" id="caixaTabsContent">
+
+    <!-- Aba Pendentes -->
+    <div class="tab-pane fade show active" id="pendentes" role="tabpanel">
+      {% for comanda in comandas %}
+        {% if not comanda.pago %}
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title mb-1"><strong>Nome:</strong> {{ comanda.nome }}</h5>
+              <p class="mb-1"><strong>Servo:</strong> {% if comanda.sem_servo %}comprada no local{% else %}{{ comanda.servo }}{% endif %}</p>
+              <p class="mb-1"><strong>Comanda:</strong> {{ comanda.id }}</p>
+              <p class="mb-2"><strong>Pedido:</strong> {{ comanda.pedido }}</p>
+
+              <ul class="list-unstyled">
+                {% for item in comanda.itens.all %}
+                  <li>1x {{ item.nome }} - R$ {{ item.preco|floatformat:2 }}</li>
+                {% endfor %}
+              </ul>
+
+              <p class="mt-2"><strong>Forma de Pagamento:</strong> {{ comanda.get_forma_pagamento_display }}</p>
+              <p><strong>Total:</strong> R$ {{ comanda.total|floatformat:2 }}</p>
+
+              <!-- Exibição da data de criação -->
+              <p><strong>Data de Criação:</strong> {{ comanda.data_criacao|date:"d/m/Y H:i" }}</p>
+
+              <!-- Verificação de 72h -->
+              {% if comanda.passou_72h %}
+                <p class="text-danger"><strong>⚠️ Comanda passou de 72 horas e não foi paga!</strong></p>
+              {% endif %}
+
+              <div class="btn-group mt-3" role="group">
+                <form method="post" action="{% url 'caixa:marcar_como_pago' comanda.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-success btn-sm me-3">Pago</button>
+                </form>
+
+                <a href="{% url 'comandas:gerar_voucher' comanda.pk %}" target="_blank" class="btn btn-warning btn-sm mb-1">
+                  🧾 Voucher
+                </a>
+
+                <!-- Botão de Excluir -->
+                <form method="post" action="{% url 'comandas:excluir_comanda' comanda.id %}" class="ms-2">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% empty %}
+        <p class="text-muted">Nenhuma comanda pendente.</p>
+      {% endfor %}
     </div>
-  {% endif %}
 
+    <!-- Aba Pagos -->
+<!-- Aba Pagos -->
+<div class="tab-pane fade" id="pagos" role="tabpanel">
   {% for comanda in comandas %}
-    <div class="card mb-3 shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">Nome: {{ comanda.nome }}</h5>
-        <h5 class="card-title">
-            Servo: {% if comanda.sem_servo %}comprada no local{% else %}{{ comanda.servo }}{% endif %}
-        </h5>
-        <h5 class="card-title">Comanda {{ comanda.id }}</h5>
-        <h5 class="card-title">Pedido: {{ comanda.pedido }}</h5>
+    {% if comanda.pago and not comanda.finalizada %}
+      <div class="card mb-3 border-success shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title text-success mb-1"><strong>Nome:</strong> {{ comanda.nome }}</h5>
+          <p class="mb-1"><strong>Servo:</strong> {% if comanda.sem_servo %}comprada no local{% else %}{{ comanda.servo }}{% endif %}</p>
+          <p class="mb-1"><strong>Comanda:</strong> {{ comanda.id }}</p>
+          <p class="mb-2"><strong>Pedido:</strong> {{ comanda.pedido }}</p>
 
-        <ul class="list-unstyled">
-          {% for item in comanda.itens.all %}
-            <li>1x {{ item.nome }}</li>
-          {% endfor %}
-        </ul>
+          <ul class="list-unstyled">
+            {% for item in comanda.itens.all %}
+              <li>1x {{ item.nome }} - R$ {{ item.preco|floatformat:2 }}</li>
+            {% endfor %}
+          </ul>
 
-        <p class="mb-2"><strong>Total:</strong> R$ {{ comanda.total|floatformat:2 }}</p>
+          <p class="mt-2"><strong>Forma de Pagamento:</strong> {{ comanda.get_forma_pagamento_display }}</p>
+          <p><strong>Total:</strong> R$ {{ comanda.total|floatformat:2 }}</p>
+          <span class="badge bg-success mt-2">Pago</span>
 
-        <div class="d-flex gap-2">
-          <form method="post" action="{% url 'caixa:marcar_como_pago' comanda.id %}">
+          <!-- Botão Definir como Finalizada -->
+          <form method="post" action="{% url 'caixa:marcar_como_finalizada' comanda.id %}" class="mt-2">
             {% csrf_token %}
-            <button type="submit" class="btn btn-success btn-sm" style="width: 60px; height: 49px;">✔️</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+              ✅ Definir como Finalizada
+            </button>
           </form>
 
-          <a href="{% url 'comandas:gerar_voucher' comanda.pk %}" target="_blank" class="btn btn-warning btn-sm">
-            <img src="{% static 'img/voucher.png' %}" alt="Ícone" style="width: 40px; height: 40px;">
-          </a>
         </div>
       </div>
-    </div>
+    {% endif %}
+  {% empty %}
+    <p class="text-muted">Nenhuma comanda paga ainda.</p>
   {% endfor %}
+</div>
 
-  <form action="{% url 'comandas:reiniciar_comandas' %}" method="post" style="display: inline;">
+  </div>
+
+<!-- Aba Finalizadas -->
+<div class="tab-pane fade" id="finalizadas" role="tabpanel">
+  {% for comanda in comandas %}
+    {% if comanda.finalizada %}
+      <div class="card mb-3 border-secondary shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title text-secondary mb-1"><strong>Nome:</strong> {{ comanda.nome }}</h5>
+          <p class="mb-1"><strong>Servo:</strong> {% if comanda.sem_servo %}comprada no local{% else %}{{ comanda.servo }}{% endif %}</p>
+          <p class="mb-1"><strong>Comanda:</strong> {{ comanda.id }}</p>
+          <p class="mb-2"><strong>Pedido:</strong> {{ comanda.pedido }}</p>
+
+          <ul class="list-unstyled">
+            {% for item in comanda.itens.all %}
+              <li>1x {{ item.nome }} - R$ {{ item.preco|floatformat:2 }}</li>
+            {% endfor %}
+          </ul>
+
+          <p class="mt-2"><strong>Forma de Pagamento:</strong> {{ comanda.get_forma_pagamento_display }}</p>
+          <p><strong>Total:</strong> R$ {{ comanda.total|floatformat:2 }}</p>
+          <span class="badge bg-secondary mt-2">Finalizada</span>
+        </div>
+      </div>
+    {% endif %}
+  {% empty %}
+    <p class="text-muted">Nenhuma comanda finalizada ainda.</p>
+  {% endfor %}
+</div>
+
+
+<!-- Botão Gerar Relatório PDF -->
+<form action="{% url 'comandas:vendas_por_servo_pdf' %}" method="post" class="mb-4 text-center">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-outline-primary">
+    📄 Gerar Relatório PDF
+  </button>
+</form>
+
+
+  <!-- Botão Reiniciar -->
+  <form action="{% url 'comandas:reiniciar_comandas' %}" method="post" class="mt-4 text-center">
     {% csrf_token %}
-    <button type="submit" class="btn btn-outline-danger">Reiniciar Comandas</button>
+    <button type="submit" class="btn btn-outline-danger">
+      Reiniciar Comandas
+    </button>
   </form>
 
 </div>

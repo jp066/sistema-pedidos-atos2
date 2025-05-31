@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}ATOS Burguer{% endblock %}
+
+{% block content %}
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow p-4" style="min-width: 300px; max-width: 400px; width: 100%;">
+      <h4 class="mb-4 text-center">Acesso à Caixa</h4>
+
+      {% if erro %}
+        <div class="alert alert-danger" role="alert">
+          {{ erro }}
+        </div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="token" class="form-label">Chave de Acesso</label>
+          <input type="text" class="form-control" id="token" name="token" required>
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-danger">Entrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

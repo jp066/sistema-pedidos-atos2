@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema em Manutenção 🚧</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #2c3e50, #3498db);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin-bottom: 2rem;
+    }
+
+    .emoji {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .footer {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="emoji">🚧</div>
+  <h1>Estamos em manutenção!</h1>
+  <p>Calma aí que estamos dando um tapa no sistema para melhorar sua experiência. Já já voltamos com tudo!️</p>
+  <div class="footer">© {{ year }} ATOS Burguer. Todos os direitos reservados a João Pedro.</div>
+</body>
+</html>

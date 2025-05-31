@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ATOS Burguer{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 80vh;">
+  <h2>Buscar sua comanda</h2>
+  <form class="input-group mb-4" method="get" action="{% url 'comandas:buscar_comanda' %}">
+    <input type="text" class="form-control" name="nome" placeholder="Pesquisar por nome" value="{{ nome_pesquisa }}">
+    <button type="submit" class="btn btn-primary">🔍 Pesquisar</button>
+  </form>
+
+  {% if comandas is not None %}
+    <div class="w-75">
+
+      {% for comanda in comandas %}
+        <div class="card mb-3 shadow-sm {% if comanda.pago %}bg-light{% endif %}">
+          <div class="card-body">
+            <h5><strong>Nome:</strong> {{ comanda.nome }}</h5>
+            <p><strong>Pedido:</strong> {{ comanda.pedido }}</p>
+            <ul class="list-unstyled">
+              {% for item in comanda.itens.all %}
+                <li>1x {{ item.nome }} - R$ {{ item.preco|floatformat:2 }}</li>
+              {% endfor %}
+            </ul>
+            <p><strong>Pagamento:</strong> {{ comanda.get_forma_pagamento_display }}</p>
+            <p><strong>Data:</strong> {{ comanda.data_criacao|date:"d/m/Y H:i" }}</p>
+            <div class="btn-group mt-3" role="group">
+              <button class="btn btn-warning btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalVoucher{{ comanda.pk }}">
+                🧾 Voucher
+              </button>
+              <div class="modal fade" id="modalVoucher{{ comanda.pk }}" tabindex="-1">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form method="post" action="{% url 'comandas:validar_servo' comanda.pk %}">
+                      {% csrf_token %}
+                      <div class="modal-header">
+                        <h5 class="modal-title">Validação do Servo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                          <div class="mb-3">
+                              <label for="servo_{{ comanda.pk }}" class="form-label">Quem foi o servo?</label>
+                              {% if not comanda.sem_servo %}
+                                  <select name="servo" id="servo_{{ comanda.pk }}" class="form-control" required>
+                                      <option value="">Selecione um servo</option>
+                                      {% for servo in servos %}
+                                          <option value="{{ servo }}">{{ servo }}</option>
+                                      {% endfor %}
+                                  </select>
+                              {% else %}
+                                  <p class="form-control-plaintext text-muted">Comanda comprada no local (sem servo)</p>
+                              {% endif %}
+                          </div>
+
+                          <label for="email_{{ comanda.pk }}" class="form-label">Qual seu e-mail?</label>
+                          <input type="email" class="form-control" name="email" id="email_{{ comanda.pk }}" required>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Validar</button>
+                        <div id="loadingSpinner{{ comanda.pk }}" class="d-none text-center w-100">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">Procure sua comanda aqui.</p>
+  {% endif %}
+</div>
+
+<!-- Modal de Erro -->
+<div class="modal fade" id="modalErro" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-danger text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">Validação encerrada</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>O nome do servo informado está incorreto ou não autorizado.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Voltar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    {% for comanda in comandas %}
+      const form{{ comanda.pk }} = document.querySelector("#modalVoucher{{ comanda.pk }} form");
+      const spinner{{ comanda.pk }} = document.querySelector("#loadingSpinner{{ comanda.pk }}");
+
+      if (form{{ comanda.pk }}) {
+        form{{ comanda.pk }}.addEventListener("submit", function (e) {
+          e.preventDefault();
+          spinner{{ comanda.pk }}.classList.remove("d-none");
+          form{{ comanda.pk }}.querySelector("button[type=submit]").disabled = true;
+          setTimeout(() => {
+            form{{ comanda.pk }}.submit();
+          }, 2000);
+        });
+      }
+    {% endfor %}
+
+    {% if messages %}
+      {% for message in messages %}
+        {% if message.tags == "error" %}
+          var erroModal = new bootstrap.Modal(document.getElementById('modalErro'));
+          erroModal.show();
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  });
+</script>
+
+{% endblock %}

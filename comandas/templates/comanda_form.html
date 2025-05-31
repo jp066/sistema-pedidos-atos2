@@ -4,15 +4,6 @@
 {% block content %}
 <div class="mt-4">
 
-    {# ── Alerta de limite por servo ── #}
-    {% if erro_servo %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ erro_servo }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    {% endif %}
-
-    {# ── Alerta de limite de estoque de comandas ── #}
     {% if erro_estoque %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ erro_estoque }}
@@ -30,9 +21,14 @@
         </div>
 
         <div class="mb-3">
+            <label for="id_email" class="form-label">email</label>
+            <input type="email" name="email" class="form-control" id="id_email"
+                   placeholder="nome@dominio.com" value="{{ form_data.email|default_if_none:'' }}" required>
+        </div>
+
+        <div class="mb-3">
             <label for="id_servo" class="form-label">Servo</label>
             {% if not sem_servo %}
-                <label for="servo">Escolha um Servo:</label>
                 <select name="servo" id="servo" class="form-control">
                     <option value="">Selecione um servo</option>
                     {% for servo in servos %}
@@ -55,10 +51,10 @@
             <select name="pedido" id="id_pedido" class="form-select" required>
                 <option value="" disabled {% if not form_data %}selected{% endif %}>Selecione o pedido</option>
                 <option value="Hamburguer + Suco" {% if form_data.pedido == "Hamburguer + Suco" %}selected{% endif %}>
-                    Hamburguer + Suco&nbsp;–&nbsp;R$ 20,00
+                    Hamburguer + Suco&nbsp;–&nbsp;R$ 22,00
                 </option>
                 <option value="Hamburguer + Refri" {% if form_data.pedido == "Hamburguer + Refri" %}selected{% endif %}>
-                    Hamburguer + Refri&nbsp;–&nbsp;R$ 21,00
+                    Hamburguer + Refri&nbsp;–&nbsp;R$ 22,00
                 </option>
             </select>
         </div>
@@ -73,8 +69,22 @@
         </div>
 
         <div class="d-grid">
-            <button type="submit" class="btn btn-danger">Finalizar</button>
+            <button type="submit" class="btn btn-danger" id="btn-finalizar">Finalizar</button>
         </div>
     </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const btnFinalizar = document.getElementById("btn-finalizar");
+
+    form.addEventListener("submit", function () {
+      btnFinalizar.disabled = true;
+      btnFinalizar.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Finalizando... Por favor, aguarde!
+      `;
+    });
+  });
+</script>
 {% endblock %}

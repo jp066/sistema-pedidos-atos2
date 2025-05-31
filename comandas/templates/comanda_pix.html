@@ -3,6 +3,15 @@
 {% block title %}ATOS Burguer{% endblock %}
 
 {% block content %}
+    <br>
+
+{% if comanda.servo and comanda_count >= 2 %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ comanda.servo }} já vendeu {{ comanda_count }} comandas! Parabéns pelo esforço! 🎉
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endif %}
+
 <div class="d-flex flex-column justify-content-center align-items-center min-vh-100">
     <h3 class="text-center mb-3">Escaneie o QR Code abaixo para pagar</h3>
 
@@ -10,20 +19,50 @@
     <img src="{% static 'img/qr_code.jpeg' %}"
          alt="QR Code Pix"
          class="img-fluid mb-3"
-         style="max-width: 300px;">
+         style="max-width: 200px;">
 
-    <!-- Botão / ícone do voucher em bloco próprio -->
+    <!-- Copiar PIX -->
+<div class="mb-3 text-center">
+    <p class="mb-1 fw-semibold">Chave PIX: <code id="pixKey">atos2psje@gmail.com</code></p>
+    <button class="btn btn-danger btn-sm" onclick="copyPixKey()">Copiar</button>
+    <div id="copyAlert" class="text-danger mt-1 fw-bold" style="display: none;">Copiado!</div>
+</div>
+
+
+    <!-- Botão / ícone do voucher -->
     <a href="{% url 'comandas:gerar_voucher' comanda.pk %}"
        target="_blank"
        class="btn btn-warning d-flex flex-column align-items-center gap-2 mb-3">
-
         <img src="{% static 'img/voucher.png' %}"
              alt="Voucher"
              style="width: 40px; height: 40px;">
-
         <span class="small fw-semibold text-dark">Gerar&nbsp;voucher</span>
     </a>
 
-    <p class="text-center mt-2">Após o pagamento, aguarde a confirmação.</p>
+
+    <p class="text-center mt-1">Foi mandado um email confirmando que você fez o pedido, verifique a caixa de spans</p>
+    <p class="text-center mt-1">do email e marque o email como Não é spam, para receber o lembrete de pagamento. </p>
+    <p class="text-danger mt-1">Efetue o pagamento em até 72 horas (3 dias) para ter seu pagamento confirmado.</p>
+    <p class="text-danger mt-1">Caso não seja efetuado, seu pedido será cancelado.</p>
+
 </div>
+
+<!-- Script copiar -->
+<script>
+    function copyPixKey() {
+        const key = document.getElementById("pixKey").textContent;
+
+        navigator.clipboard.writeText(key).then(() => {
+            const alert = document.getElementById("copyAlert");
+            alert.style.display = "block";
+
+            setTimeout(() => {
+                alert.style.display = "none";
+                // Redireciona pra home (ajuste conforme sua URL base)
+                window.location.href = "/";
+            }, 2000); // espera 2s antes de redirecionar
+        });
+    }
+</script>
+
 {% endblock %}
